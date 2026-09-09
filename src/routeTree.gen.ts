@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as PedidoRouteImport } from './routes/pedido'
 import { Route as ProdutorIdRouteImport } from './routes/produtor.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PedidoRoute = PedidoRouteImport.update({
+  id: '/pedido',
+  path: '/pedido',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProdutorIdRoute = ProdutorIdRouteImport.update({
   id: '/produtor/$id',
   path: '/produtor/$id',
@@ -32,30 +38,34 @@ const ProdutorIdRoute = ProdutorIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/pedido': typeof PedidoRoute
   '/produtor/$id': typeof ProdutorIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/pedido': typeof PedidoRoute
   '/produtor/$id': typeof ProdutorIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/pedido': typeof PedidoRoute
   '/produtor/$id': typeof ProdutorIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/produtor/$id'
+  fullPaths: '/' | '/auth' | '/pedido' | '/produtor/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/produtor/$id'
-  id: '__root__' | '/' | '/auth' | '/produtor/$id'
+  to: '/' | '/auth' | '/pedido' | '/produtor/$id'
+  id: '__root__' | '/' | '/auth' | '/pedido' | '/produtor/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  PedidoRoute: typeof PedidoRoute
   ProdutorIdRoute: typeof ProdutorIdRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pedido': {
+      id: '/pedido'
+      path: '/pedido'
+      fullPath: '/pedido'
+      preLoaderRoute: typeof PedidoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/produtor/$id': {
       id: '/produtor/$id'
       path: '/produtor/$id'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  PedidoRoute: PedidoRoute,
   ProdutorIdRoute: ProdutorIdRoute,
 }
 export const routeTree = rootRouteImport
