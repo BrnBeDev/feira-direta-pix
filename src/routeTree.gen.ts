@@ -10,13 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PedidoRouteImport } from './routes/pedido'
+import { Route as AuthenticatedMeusPedidosRouteImport } from './routes/_authenticated/meus-pedidos'
+import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as ProdutorIdRouteImport } from './routes/produtor.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -29,6 +36,17 @@ const PedidoRoute = PedidoRouteImport.update({
   path: '/pedido',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedMeusPedidosRoute =
+  AuthenticatedMeusPedidosRouteImport.update({
+    id: '/meus-pedidos',
+    path: '/meus-pedidos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPainelRoute = AuthenticatedPainelRouteImport.update({
+  id: '/painel',
+  path: '/painel',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ProdutorIdRoute = ProdutorIdRouteImport.update({
   id: '/produtor/$id',
   path: '/produtor/$id',
@@ -39,31 +57,48 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/pedido': typeof PedidoRoute
+  '/meus-pedidos': typeof AuthenticatedMeusPedidosRoute
+  '/painel': typeof AuthenticatedPainelRoute
   '/produtor/$id': typeof ProdutorIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/pedido': typeof PedidoRoute
+  '/meus-pedidos': typeof AuthenticatedMeusPedidosRoute
+  '/painel': typeof AuthenticatedPainelRoute
   '/produtor/$id': typeof ProdutorIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/pedido': typeof PedidoRoute
+  '/_authenticated/meus-pedidos': typeof AuthenticatedMeusPedidosRoute
+  '/_authenticated/painel': typeof AuthenticatedPainelRoute
   '/produtor/$id': typeof ProdutorIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/pedido' | '/produtor/$id'
+  fullPaths:
+    '/' | '/auth' | '/pedido' | '/meus-pedidos' | '/painel' | '/produtor/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/pedido' | '/produtor/$id'
-  id: '__root__' | '/' | '/auth' | '/pedido' | '/produtor/$id'
+  to: '/' | '/auth' | '/pedido' | '/meus-pedidos' | '/painel' | '/produtor/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/pedido'
+    | '/_authenticated/meus-pedidos'
+    | '/_authenticated/painel'
+    | '/produtor/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   PedidoRoute: typeof PedidoRoute
   ProdutorIdRoute: typeof ProdutorIdRoute
@@ -76,6 +111,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -92,6 +134,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PedidoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/meus-pedidos': {
+      id: '/_authenticated/meus-pedidos'
+      path: '/meus-pedidos'
+      fullPath: '/meus-pedidos'
+      preLoaderRoute: typeof AuthenticatedMeusPedidosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/painel': {
+      id: '/_authenticated/painel'
+      path: '/painel'
+      fullPath: '/painel'
+      preLoaderRoute: typeof AuthenticatedPainelRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/produtor/$id': {
       id: '/produtor/$id'
       path: '/produtor/$id'
@@ -102,8 +158,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedMeusPedidosRoute: typeof AuthenticatedMeusPedidosRoute
+  AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedMeusPedidosRoute: AuthenticatedMeusPedidosRoute,
+  AuthenticatedPainelRoute: AuthenticatedPainelRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   PedidoRoute: PedidoRoute,
   ProdutorIdRoute: ProdutorIdRoute,
