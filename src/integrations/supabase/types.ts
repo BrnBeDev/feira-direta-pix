@@ -98,13 +98,6 @@ export type Database = {
             referencedRelation: "sellers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "orders_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "sellers_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       products: {
@@ -155,13 +148,6 @@ export type Database = {
             referencedRelation: "sellers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "products_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "sellers_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       sellers: {
@@ -205,33 +191,7 @@ export type Database = {
       }
     }
     Views: {
-      sellers_public: {
-        Row: {
-          bio: string | null
-          city: string | null
-          created_at: string | null
-          id: string | null
-          producer_name: string | null
-          stall_name: string | null
-        }
-        Insert: {
-          bio?: string | null
-          city?: string | null
-          created_at?: string | null
-          id?: string | null
-          producer_name?: string | null
-          stall_name?: string | null
-        }
-        Update: {
-          bio?: string | null
-          city?: string | null
-          created_at?: string | null
-          id?: string | null
-          producer_name?: string | null
-          stall_name?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       [_ in never]: never
