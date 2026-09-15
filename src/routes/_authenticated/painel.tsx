@@ -161,7 +161,10 @@ function Painel() {
                                 .from("products")
                                 .delete()
                                 .eq("id", p.id);
-                              if (error) return toast.error("Não foi possível apagar");
+                              if (error) {
+                                toast.error("Não foi possível apagar");
+                                return;
+                              }
                               toast.success("Produto apagado");
                               queryClient.invalidateQueries({ queryKey: ["meus-produtos"] });
                               queryClient.invalidateQueries({ queryKey: ["produtos-feira"] });
