@@ -17,10 +17,11 @@ export const Route = createFileRoute("/auth")({
       { property: "og:description", content: "Acesse sua conta da feira de produtores." },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>) => ({
-    next: typeof search["next"] === "string" && search["next"].startsWith("/")
-      ? search["next"]
-      : "/",
+  validateSearch: (search: Record<string, unknown>): { next?: string } => ({
+    next:
+      typeof search["next"] === "string" && search["next"].startsWith("/")
+        ? search["next"]
+        : undefined,
   }),
   component: AuthPage,
 });
