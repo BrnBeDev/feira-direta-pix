@@ -43,7 +43,7 @@ function BancaPage() {
       const [banca, produtos] = await Promise.all([
         supabase
           .from("sellers")
-          .select("id, stall_name, producer_name, bio, city, pix_key")
+          .select("id, stall_name, producer_name, bio, city")
           .eq("id", id)
           .maybeSingle(),
         supabase
@@ -92,12 +92,10 @@ function BancaPage() {
           {banca.city ? ` · ${banca.city}` : ""}
         </p>
         {banca.bio && <p className="mt-4 max-w-xl leading-relaxed text-muted-foreground">{banca.bio}</p>}
-        {banca.pix_key && (
-          <div className="glass-soft mt-6 inline-flex flex-wrap items-center gap-3 rounded-2xl px-4 py-3">
-            <span className="text-xs font-medium text-muted-foreground">Chave PIX</span>
-            <span className="text-sm font-semibold">{banca.pix_key}</span>
-          </div>
-        )}
+        <div className="glass-soft mt-6 inline-flex flex-wrap items-center gap-3 rounded-2xl px-4 py-3">
+          <span className="text-xs font-medium text-muted-foreground">Pagamento</span>
+          <span className="text-sm font-semibold">A chave PIX aparece na hora de finalizar o pedido</span>
+        </div>
       </section>
 
       <section className="mt-10 mb-6">
