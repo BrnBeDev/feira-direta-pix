@@ -144,7 +144,10 @@ function Painel() {
                                 .from("products")
                                 .update({ is_available: !p.is_available })
                                 .eq("id", p.id);
-                              if (error) return toast.error("Não foi possível atualizar");
+                              if (error) {
+                                toast.error("Não foi possível atualizar");
+                                return;
+                              }
                               queryClient.invalidateQueries({ queryKey: ["meus-produtos"] });
                               queryClient.invalidateQueries({ queryKey: ["produtos-feira"] });
                             }}
@@ -158,7 +161,10 @@ function Painel() {
                                 .from("products")
                                 .delete()
                                 .eq("id", p.id);
-                              if (error) return toast.error("Não foi possível apagar");
+                              if (error) {
+                                toast.error("Não foi possível apagar");
+                                return;
+                              }
                               toast.success("Produto apagado");
                               queryClient.invalidateQueries({ queryKey: ["meus-produtos"] });
                               queryClient.invalidateQueries({ queryKey: ["produtos-feira"] });
@@ -206,7 +212,10 @@ function Painel() {
                                     .from("orders")
                                     .update({ status: "pago" })
                                     .eq("id", o.id);
-                                  if (error) return toast.error("Não foi possível atualizar");
+                                  if (error) {
+                                    toast.error("Não foi possível atualizar");
+                                    return;
+                                  }
                                   toast.success("Pedido marcado como pago");
                                   queryClient.invalidateQueries({ queryKey: ["pedidos-da-banca"] });
                                 }}

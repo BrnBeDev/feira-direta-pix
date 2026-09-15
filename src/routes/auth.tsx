@@ -17,16 +17,16 @@ export const Route = createFileRoute("/auth")({
       { property: "og:description", content: "Acesse sua conta da feira de produtores." },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>) => ({
-    next: typeof search["next"] === "string" && search["next"].startsWith("/")
-      ? search["next"]
-      : "/",
-  }),
+  validateSearch: (search: Record<string, unknown>): { next?: string | undefined } =>
+    typeof search["next"] === "string" && search["next"].startsWith("/")
+      ? { next: search["next"] }
+      : {},
   component: AuthPage,
 });
 
 function AuthPage() {
-  const { next } = Route.useSearch();
+  const { next: destinoBruto } = Route.useSearch();
+  const next = destinoBruto ?? "/";
   const navigate = useNavigate();
   const [modo, setModo] = useState<"entrar" | "criar">("entrar");
   const [email, setEmail] = useState("");
