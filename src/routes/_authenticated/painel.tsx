@@ -212,7 +212,10 @@ function Painel() {
                                     .from("orders")
                                     .update({ status: "pago" })
                                     .eq("id", o.id);
-                                  if (error) return toast.error("Não foi possível atualizar");
+                                  if (error) {
+                                    toast.error("Não foi possível atualizar");
+                                    return;
+                                  }
                                   toast.success("Pedido marcado como pago");
                                   queryClient.invalidateQueries({ queryKey: ["pedidos-da-banca"] });
                                 }}
