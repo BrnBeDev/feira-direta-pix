@@ -27,7 +27,8 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { next } = Route.useSearch();
+  const { next: destinoBruto } = Route.useSearch();
+  const next = destinoBruto ?? "/";
   const navigate = useNavigate();
   const [modo, setModo] = useState<"entrar" | "criar">("entrar");
   const [email, setEmail] = useState("");
