@@ -31,7 +31,7 @@ function MeusPedidos() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, total_cents, status, created_at, sellers(stall_name, pix_key), order_items(product_name, quantity, unit, unit_price_cents)",
+          "id, total_cents, status, payment_method, created_at, sellers(stall_name, pix_key), order_items(product_name, quantity, unit, unit_price_cents)",
         )
         .eq("buyer_id", user!.id)
         .order("created_at", { ascending: false });
