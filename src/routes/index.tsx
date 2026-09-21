@@ -25,7 +25,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const categorias = ["Hortifruti", "Frios & queijos", "Doces", "Panificados", "Bebidas"];
+const categorias = ["Hortifruti", "Peixes", "Doces", "Bebidas", "Artesanato"];
 
 function Index() {
   const { totalCents, count, items } = useCart();
