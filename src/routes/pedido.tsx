@@ -101,6 +101,7 @@ function PedidoPage() {
         });
       }
       setConfirmados(criados);
+      setPagamentoFeito(pagamento);
       clear();
       toast.success("Pedido enviado ao produtor");
     } catch (err) {
