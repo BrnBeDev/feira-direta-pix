@@ -24,12 +24,16 @@ export const Route = createFileRoute("/pedido")({
   component: PedidoPage,
 });
 
+type Pagamento = "pix" | "na_retirada";
+
 type Confirmado = { sellerId: string; stallName: string; totalCents: number; pixKey: string | null };
 
 function PedidoPage() {
   const { items, totalCents, setQuantity, remove, clear } = useCart();
   const { user } = useSession();
   const [confirmados, setConfirmados] = useState<Confirmado[] | null>(null);
+  const [pagamento, setPagamento] = useState<Pagamento>("pix");
+  const [pagamentoFeito, setPagamentoFeito] = useState<Pagamento>("pix");
   const [enviando, setEnviando] = useState(false);
 
   const sellerIds = [...new Set(items.map((i) => i.sellerId))];
