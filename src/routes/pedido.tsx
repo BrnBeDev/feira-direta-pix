@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PixBlock } from "@/components/PixBlock";
+import { PickupBlock } from "@/components/PickupBlock";
 import { useCart } from "@/lib/cart";
 import { useSession } from "@/lib/useSession";
 import { formatBRL } from "@/lib/format";
