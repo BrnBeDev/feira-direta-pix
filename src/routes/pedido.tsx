@@ -75,6 +75,7 @@ function PedidoPage() {
             buyer_id: user.id,
             seller_id: grupo.sellerId,
             total_cents: grupo.totalCents,
+            payment_method: pagamento,
           })
           .select("id")
           .single();
