@@ -203,9 +203,13 @@ function Painel() {
                               .map((i) => `${i.quantity}× ${i.product_name} (${i.unit})`)
                               .join(", ")}
                           </p>
-                          <div className="mt-3 flex items-center gap-2">
+                          <div className="mt-3 flex flex-wrap items-center gap-2">
                             <span className="rounded-full bg-mint/15 px-3 py-1 text-xs font-semibold text-mint">
-                              {o.status === "pago" ? "Pagamento confirmado" : "Aguardando pagamento"}
+                              {o.status === "pago"
+                                ? "Pagamento confirmado"
+                                : o.payment_method === "na_retirada"
+                                  ? "Paga na retirada"
+                                  : "Aguardando PIX"}
                             </span>
                             {o.status !== "pago" && (
                               <button
@@ -223,7 +227,9 @@ function Painel() {
                                 }}
                                 className="rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground"
                               >
-                                Recebi o PIX
+                                {o.payment_method === "na_retirada"
+                                  ? "Recebi na retirada"
+                                  : "Recebi o PIX"}
                               </button>
                             )}
                           </div>
