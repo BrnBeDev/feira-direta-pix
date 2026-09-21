@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PixBlock } from "@/components/PixBlock";
+import { PickupBlock } from "@/components/PickupBlock";
 import { formatBRL } from "@/lib/format";
 import { useSession } from "@/lib/useSession";
 
