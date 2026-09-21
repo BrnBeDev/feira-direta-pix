@@ -68,6 +68,7 @@ export type Database = {
           buyer_note: string | null
           created_at: string
           id: string
+          payment_method: string
           seller_id: string
           status: string
           total_cents: number
@@ -77,6 +78,7 @@ export type Database = {
           buyer_note?: string | null
           created_at?: string
           id?: string
+          payment_method?: string
           seller_id: string
           status?: string
           total_cents: number
@@ -86,6 +88,7 @@ export type Database = {
           buyer_note?: string | null
           created_at?: string
           id?: string
+          payment_method?: string
           seller_id?: string
           status?: string
           total_cents?: number

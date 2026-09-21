@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PixBlock } from "@/components/PixBlock";
+import { PickupBlock } from "@/components/PickupBlock";
 import { formatBRL } from "@/lib/format";
 import { useSession } from "@/lib/useSession";
 
@@ -31,7 +32,7 @@ function MeusPedidos() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, total_cents, status, created_at, sellers(stall_name, pix_key), order_items(product_name, quantity, unit, unit_price_cents)",
+          "id, total_cents, status, payment_method, created_at, sellers(stall_name, pix_key), order_items(product_name, quantity, unit, unit_price_cents)",
         )
         .eq("buyer_id", user!.id)
         .order("created_at", { ascending: false });
@@ -68,7 +69,11 @@ function MeusPedidos() {
                     {o.sellers?.stall_name ?? "Banca da feira"}
                   </p>
                   <span className="rounded-full bg-mint/15 px-3 py-1 text-xs font-semibold text-mint">
-                    {o.status === "pago" ? "Pagamento confirmado" : "Aguardando pagamento"}
+                    {o.status === "pago"
+                      ? "Pagamento confirmado"
+                      : o.payment_method === "na_retirada"
+                        ? "Você paga na retirada"
+                        : "Aguardando pagamento"}
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -89,11 +94,18 @@ function MeusPedidos() {
                 </ul>
               </div>
               <div className="lg:col-span-5">
-                <PixBlock
-                  stallName={o.sellers?.stall_name ?? "a banca"}
-                  pixKey={o.sellers?.pix_key ?? null}
-                  totalCents={o.total_cents}
-                />
+                {o.payment_method === "na_retirada" ? (
+                  <PickupBlock
+                    stallName={o.sellers?.stall_name ?? "a banca"}
+                    totalCents={o.total_cents}
+                  />
+                ) : (
+                  <PixBlock
+                    stallName={o.sellers?.stall_name ?? "a banca"}
+                    pixKey={o.sellers?.pix_key ?? null}
+                    totalCents={o.total_cents}
+                  />
+                )}
               </div>
             </div>
           ))}

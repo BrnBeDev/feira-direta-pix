@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PixBlock } from "@/components/PixBlock";
+import { PickupBlock } from "@/components/PickupBlock";
 import { useCart } from "@/lib/cart";
 import { useSession } from "@/lib/useSession";
 import { formatBRL } from "@/lib/format";
@@ -24,12 +25,16 @@ export const Route = createFileRoute("/pedido")({
   component: PedidoPage,
 });
 
+type Pagamento = "pix" | "na_retirada";
+
 type Confirmado = { sellerId: string; stallName: string; totalCents: number; pixKey: string | null };
 
 function PedidoPage() {
   const { items, totalCents, setQuantity, remove, clear } = useCart();
   const { user } = useSession();
   const [confirmados, setConfirmados] = useState<Confirmado[] | null>(null);
+  const [pagamento, setPagamento] = useState<Pagamento>("pix");
+  const [pagamentoFeito, setPagamentoFeito] = useState<Pagamento>("pix");
   const [enviando, setEnviando] = useState(false);
 
   const sellerIds = [...new Set(items.map((i) => i.sellerId))];
@@ -71,6 +76,7 @@ function PedidoPage() {
             buyer_id: user.id,
             seller_id: grupo.sellerId,
             total_cents: grupo.totalCents,
+            payment_method: pagamento,
           })
           .select("id")
           .single();
@@ -96,6 +102,7 @@ function PedidoPage() {
         });
       }
       setConfirmados(criados);
+      setPagamentoFeito(pagamento);
       clear();
       toast.success("Pedido enviado ao produtor");
     } catch (err) {
@@ -109,20 +116,29 @@ function PedidoPage() {
     return (
       <PageShell>
         <section className="mt-12">
-          <h1 className="text-4xl font-extrabold">Agora é só pagar</h1>
+          <h1 className="text-4xl font-extrabold">
+            {pagamentoFeito === "pix" ? "Agora é só pagar" : "Pedido enviado"}
+          </h1>
           <p className="mt-2 text-muted-foreground">
-            Copie a chave PIX de cada banca e envie o valor. O produtor recebe na hora.
+            {pagamentoFeito === "pix"
+              ? "Copie a chave PIX de cada banca e envie o valor. O produtor recebe na hora."
+              : "Você paga direto ao feirante quando retirar os produtos na banca."}
           </p>
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            {confirmados.map((c) => (
-              <PixBlock
-                key={c.sellerId}
-                stallName={c.stallName}
-                pixKey={c.pixKey}
-                totalCents={c.totalCents}
-              />
-            ))}
+            {confirmados.map((c) =>
+              pagamentoFeito === "pix" ? (
+                <PixBlock
+                  key={c.sellerId}
+                  stallName={c.stallName}
+                  pixKey={c.pixKey}
+                  totalCents={c.totalCents}
+                />
+              ) : (
+                <PickupBlock key={c.sellerId} stallName={c.stallName} totalCents={c.totalCents} />
+              ),
+            )}
           </div>
+
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               to="/meus-pedidos"
@@ -232,8 +248,48 @@ function PedidoPage() {
                   {formatBRL(totalCents)}
                 </p>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  O pagamento é feito por PIX, direto para cada produtor.
+                  Escolha como quer pagar cada produtor.
                 </p>
+
+                <div className="mt-5 space-y-3">
+                  {(
+                    [
+                      {
+                        id: "pix" as const,
+                        titulo: "Pagar por PIX agora",
+                        texto: "Você copia a chave do produtor e paga na hora.",
+                      },
+                      {
+                        id: "na_retirada" as const,
+                        titulo: "Pagar na retirada",
+                        texto: "Você paga direto ao feirante quando buscar os produtos.",
+                      },
+                    ]
+                  ).map((opcao) => (
+                    <button
+                      key={opcao.id}
+                      type="button"
+                      onClick={() => setPagamento(opcao.id)}
+                      aria-pressed={pagamento === opcao.id}
+                      className={`w-full rounded-2xl p-4 text-left transition ${
+                        pagamento === opcao.id
+                          ? "bg-primary text-primary-foreground shadow-glass"
+                          : "glass-soft"
+                      }`}
+                    >
+                      <span className="block text-sm font-bold">{opcao.titulo}</span>
+                      <span
+                        className={`mt-0.5 block text-xs ${
+                          pagamento === opcao.id
+                            ? "text-primary-foreground/80"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {opcao.texto}
+                      </span>
+                    </button>
+                  ))}
+                </div>
 
                 {user ? (
                   <button
@@ -241,7 +297,11 @@ function PedidoPage() {
                     disabled={enviando}
                     className="mt-5 w-full rounded-2xl bg-primary px-4 py-4 text-base font-bold text-primary-foreground shadow-glass disabled:opacity-60"
                   >
-                    {enviando ? "Enviando..." : "Confirmar e pagar com PIX"}
+                    {enviando
+                      ? "Enviando..."
+                      : pagamento === "pix"
+                        ? "Confirmar e pagar com PIX"
+                        : "Confirmar e pagar na retirada"}
                   </button>
                 ) : (
                   <Link
