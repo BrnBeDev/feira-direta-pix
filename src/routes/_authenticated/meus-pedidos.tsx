@@ -68,7 +68,11 @@ function MeusPedidos() {
                     {o.sellers?.stall_name ?? "Banca da feira"}
                   </p>
                   <span className="rounded-full bg-mint/15 px-3 py-1 text-xs font-semibold text-mint">
-                    {o.status === "pago" ? "Pagamento confirmado" : "Aguardando pagamento"}
+                    {o.status === "pago"
+                      ? "Pagamento confirmado"
+                      : o.payment_method === "na_retirada"
+                        ? "Você paga na retirada"
+                        : "Aguardando pagamento"}
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
