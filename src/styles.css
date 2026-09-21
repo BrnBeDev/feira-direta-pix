@@ -101,11 +101,15 @@
     font-family: var(--font-body);
     background-image: linear-gradient(
       135deg,
-      var(--mist) 0%,
-      oklch(1 0 0) 45%,
-      oklch(0.945 0.018 245) 100%
-    );
+      oklch(1 0 0 / 82%) 0%,
+      oklch(0.985 0.006 250 / 78%) 45%,
+      oklch(0.945 0.018 245 / 82%) 100%
+    ),
+      url("./assets/portal-sao-chico.jpg");
+    background-size: cover;
+    background-position: center;
     background-attachment: fixed;
+    background-repeat: no-repeat;
   }
 
   h1,
