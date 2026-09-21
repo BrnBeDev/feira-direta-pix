@@ -111,9 +111,11 @@ export type Database = {
           id: string
           image_url: string | null
           is_available: boolean
+          low_stock_threshold: number
           name: string
           price_cents: number
           seller_id: string
+          stock_quantity: number
           unit: string
           updated_at: string
         }
@@ -124,9 +126,11 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_available?: boolean
+          low_stock_threshold?: number
           name: string
           price_cents: number
           seller_id: string
+          stock_quantity?: number
           unit?: string
           updated_at?: string
         }
@@ -137,9 +141,11 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_available?: boolean
+          low_stock_threshold?: number
           name?: string
           price_cents?: number
           seller_id?: string
+          stock_quantity?: number
           unit?: string
           updated_at?: string
         }
