@@ -209,6 +209,17 @@ function Index() {
         <p className="mt-10 text-center text-xs text-muted-foreground">
           Colheita · feira de produtores · interface pensada para todos
         </p>
+        <p className="mt-2 text-center text-[10px] text-muted-foreground/80">
+          Foto do portal de entrada: São Francisco Xavier —{" "}
+          <a
+            href="https://commons.wikimedia.org/wiki/File:Portal_de_S%C3%A3o_Chico.jpg"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="underline decoration-dotted underline-offset-2 hover:text-muted-foreground"
+          >
+            Dravinia / CC BY-SA 3.0
+          </a>
+        </p>
       </section>
     </PageShell>
   );
