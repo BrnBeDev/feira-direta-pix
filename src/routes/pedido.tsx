@@ -248,8 +248,48 @@ function PedidoPage() {
                   {formatBRL(totalCents)}
                 </p>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  O pagamento é feito por PIX, direto para cada produtor.
+                  Escolha como quer pagar cada produtor.
                 </p>
+
+                <div className="mt-5 space-y-3">
+                  {(
+                    [
+                      {
+                        id: "pix" as const,
+                        titulo: "Pagar por PIX agora",
+                        texto: "Você copia a chave do produtor e paga na hora.",
+                      },
+                      {
+                        id: "na_retirada" as const,
+                        titulo: "Pagar na retirada",
+                        texto: "Você paga direto ao feirante quando buscar os produtos.",
+                      },
+                    ]
+                  ).map((opcao) => (
+                    <button
+                      key={opcao.id}
+                      type="button"
+                      onClick={() => setPagamento(opcao.id)}
+                      aria-pressed={pagamento === opcao.id}
+                      className={`w-full rounded-2xl p-4 text-left transition ${
+                        pagamento === opcao.id
+                          ? "bg-primary text-primary-foreground shadow-glass"
+                          : "glass-soft"
+                      }`}
+                    >
+                      <span className="block text-sm font-bold">{opcao.titulo}</span>
+                      <span
+                        className={`mt-0.5 block text-xs ${
+                          pagamento === opcao.id
+                            ? "text-primary-foreground/80"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {opcao.texto}
+                      </span>
+                    </button>
+                  ))}
+                </div>
 
                 {user ? (
                   <button
@@ -257,7 +297,11 @@ function PedidoPage() {
                     disabled={enviando}
                     className="mt-5 w-full rounded-2xl bg-primary px-4 py-4 text-base font-bold text-primary-foreground shadow-glass disabled:opacity-60"
                   >
-                    {enviando ? "Enviando..." : "Confirmar e pagar com PIX"}
+                    {enviando
+                      ? "Enviando..."
+                      : pagamento === "pix"
+                        ? "Confirmar e pagar com PIX"
+                        : "Confirmar e pagar na retirada"}
                   </button>
                 ) : (
                   <Link
