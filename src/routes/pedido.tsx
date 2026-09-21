@@ -115,20 +115,29 @@ function PedidoPage() {
     return (
       <PageShell>
         <section className="mt-12">
-          <h1 className="text-4xl font-extrabold">Agora é só pagar</h1>
+          <h1 className="text-4xl font-extrabold">
+            {pagamentoFeito === "pix" ? "Agora é só pagar" : "Pedido enviado"}
+          </h1>
           <p className="mt-2 text-muted-foreground">
-            Copie a chave PIX de cada banca e envie o valor. O produtor recebe na hora.
+            {pagamentoFeito === "pix"
+              ? "Copie a chave PIX de cada banca e envie o valor. O produtor recebe na hora."
+              : "Você paga direto ao feirante quando retirar os produtos na banca."}
           </p>
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            {confirmados.map((c) => (
-              <PixBlock
-                key={c.sellerId}
-                stallName={c.stallName}
-                pixKey={c.pixKey}
-                totalCents={c.totalCents}
-              />
-            ))}
+            {confirmados.map((c) =>
+              pagamentoFeito === "pix" ? (
+                <PixBlock
+                  key={c.sellerId}
+                  stallName={c.stallName}
+                  pixKey={c.pixKey}
+                  totalCents={c.totalCents}
+                />
+              ) : (
+                <PickupBlock key={c.sellerId} stallName={c.stallName} totalCents={c.totalCents} />
+              ),
+            )}
           </div>
+
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               to="/meus-pedidos"
