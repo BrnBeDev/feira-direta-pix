@@ -93,11 +93,18 @@ function MeusPedidos() {
                 </ul>
               </div>
               <div className="lg:col-span-5">
-                <PixBlock
-                  stallName={o.sellers?.stall_name ?? "a banca"}
-                  pixKey={o.sellers?.pix_key ?? null}
-                  totalCents={o.total_cents}
-                />
+                {o.payment_method === "na_retirada" ? (
+                  <PickupBlock
+                    stallName={o.sellers?.stall_name ?? "a banca"}
+                    totalCents={o.total_cents}
+                  />
+                ) : (
+                  <PixBlock
+                    stallName={o.sellers?.stall_name ?? "a banca"}
+                    pixKey={o.sellers?.pix_key ?? null}
+                    totalCents={o.total_cents}
+                  />
+                )}
               </div>
             </div>
           ))}
