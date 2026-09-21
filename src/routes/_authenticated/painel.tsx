@@ -68,7 +68,9 @@ function Painel() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("id, total_cents, status, created_at, order_items(product_name, quantity, unit)")
+        .select(
+          "id, total_cents, status, payment_method, created_at, order_items(product_name, quantity, unit)",
+        )
         .eq("seller_id", banca!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
