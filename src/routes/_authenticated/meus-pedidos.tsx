@@ -32,12 +32,22 @@ function MeusPedidos() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, total_cents, status, payment_method, created_at, sellers(stall_name, pix_key), order_items(product_name, quantity, unit, unit_price_cents)",
+          "id, seller_id, total_cents, status, payment_method, created_at, sellers(stall_name), order_items(product_name, quantity, unit, unit_price_cents)",
         )
         .eq("buyer_id", user!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data;
+
+      const pixPorBanca = new Map<string, string | null>();
+      const bancasPix = [...new Set((data ?? []).filter((o) => o.payment_method === "pix").map((o) => o.seller_id))];
+      await Promise.all(
+        bancasPix.map(async (sellerId) => {
+          const { data: pix } = await supabase.rpc("get_seller_pix", { _seller_id: sellerId });
+          pixPorBanca.set(sellerId, pix?.[0]?.pix_key ?? null);
+        }),
+      );
+
+      return (data ?? []).map((o) => ({ ...o, pixKey: pixPorBanca.get(o.seller_id) ?? null }));
     },
   });
 
@@ -102,7 +112,7 @@ function MeusPedidos() {
                 ) : (
                   <PixBlock
                     stallName={o.sellers?.stall_name ?? "a banca"}
-                    pixKey={o.sellers?.pix_key ?? null}
+                    pixKey={o.pixKey}
                     totalCents={o.total_cents}
                   />
                 )}
