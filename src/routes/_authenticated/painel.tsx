@@ -40,11 +40,20 @@ function Painel() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sellers")
-        .select("id, stall_name, producer_name, bio, city, pix_key, pix_key_type")
+        .select("id, stall_name, producer_name, bio, city")
         .eq("owner_id", user!.id)
         .maybeSingle();
       if (error) throw error;
-      return data;
+      if (!data) return null;
+      const { data: pix, error: pixError } = await supabase.rpc("get_seller_pix", {
+        _seller_id: data.id,
+      });
+      if (pixError) throw pixError;
+      return {
+        ...data,
+        pix_key: pix?.[0]?.pix_key ?? null,
+        pix_key_type: pix?.[0]?.pix_key_type ?? null,
+      };
     },
   });
 
