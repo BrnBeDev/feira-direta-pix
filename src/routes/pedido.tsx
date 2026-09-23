@@ -45,7 +45,7 @@ function PedidoPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sellers")
-        .select("id, stall_name, pix_key")
+        .select("id, stall_name")
         .in("id", sellerIds);
       if (error) throw error;
       return data;
@@ -58,7 +58,6 @@ function PedidoPage() {
     return {
       sellerId,
       stallName: doGrupo[0]?.stallName ?? banca?.stall_name ?? "Banca",
-      pixKey: banca?.pix_key ?? null,
       items: doGrupo,
       totalCents: doGrupo.reduce((s, i) => s + i.priceCents * i.quantity, 0),
     };
@@ -94,11 +93,20 @@ function PedidoPage() {
         );
         if (itemsError) throw itemsError;
 
+        let pixKey: string | null = null;
+        if (pagamento === "pix") {
+          const { data: pix, error: pixError } = await supabase.rpc("get_seller_pix", {
+            _seller_id: grupo.sellerId,
+          });
+          if (pixError) throw pixError;
+          pixKey = pix?.[0]?.pix_key ?? null;
+        }
+
         criados.push({
           sellerId: grupo.sellerId,
           stallName: grupo.stallName,
           totalCents: grupo.totalCents,
-          pixKey: grupo.pixKey,
+          pixKey,
         });
       }
       setConfirmados(criados);
