@@ -93,11 +93,20 @@ function PedidoPage() {
         );
         if (itemsError) throw itemsError;
 
+        let pixKey: string | null = null;
+        if (pagamento === "pix") {
+          const { data: pix, error: pixError } = await supabase.rpc("get_seller_pix", {
+            _seller_id: grupo.sellerId,
+          });
+          if (pixError) throw pixError;
+          pixKey = pix?.[0]?.pix_key ?? null;
+        }
+
         criados.push({
           sellerId: grupo.sellerId,
           stallName: grupo.stallName,
           totalCents: grupo.totalCents,
-          pixKey: grupo.pixKey,
+          pixKey,
         });
       }
       setConfirmados(criados);
