@@ -203,7 +203,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_seller_pix: {
+        Args: { _seller_id: string }
+        Returns: {
+          pix_key: string
+          pix_key_type: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
