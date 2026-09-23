@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.get_seller_pix(uuid) FROM anon, public;
