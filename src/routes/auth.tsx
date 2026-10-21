@@ -31,6 +31,8 @@ function AuthPage() {
   const [modo, setModo] = useState<"entrar" | "criar">("entrar");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [nome, setNome] = useState("");
+  const [papel, setPapel] = useState<"consumidor" | "produtor">("consumidor");
   const [enviando, setEnviando] = useState(false);
   const [confirmeEmail, setConfirmeEmail] = useState(false);
 
@@ -42,7 +44,10 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password: senha,
-          options: { emailRedirectTo: window.location.origin },
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { display_name: nome.trim(), role: papel },
+          },
         });
         if (error) throw error;
         if (!data.session) {
