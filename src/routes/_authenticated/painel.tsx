@@ -6,6 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { formatBRL, parseBRLToCents } from "@/lib/format";
 import { useSession } from "@/lib/useSession";
+import { AccountNav } from "@/components/AccountNav";
+import { Button } from "@/components/ui/button";
+import { StockEditor } from "@/components/StockEditor";
+import { validStock } from "@/lib/account-rules";
 
 export const Route = createFileRoute("/_authenticated/painel")({
   head: () => ({
@@ -21,27 +25,35 @@ export const Route = createFileRoute("/_authenticated/painel")({
         property: "og:description",
         content: "Gerencie produtos, chave PIX e pedidos da sua banca na feira.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
+  }),
+  validateSearch: (search: Record<string, unknown>): { secao: string } => ({
+    secao: ["produtos", "pix", "estoque", "pedidos"].includes(String(search.secao)) ? String(search.secao) : "produtos",
   }),
   component: Painel,
 });
 
-const unidades = ["kg", "un", "maço", "dúzia", "300g", "500g", "800g", "1L", "peça"];
-const categorias = ["Hortifruti", "Frios & queijos", "Doces", "Panificados", "Bebidas"];
+const unidades = ["kg", "un", "maço", "dúzia", "300g", "500g", "700ml", "800g", "1L", "peça"];
+const categorias = ["Hortifruti", "Peixes", "Frios & queijos", "Doces", "Panificados", "Bebidas", "Artesanato"];
 const tiposPix = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
 
 function Painel() {
   const { user } = useSession();
   const queryClient = useQueryClient();
+  const { secao } = Route.useSearch();
+  const navigate = Route.useNavigate();
 
   const { data: banca, isLoading } = useQuery({
     queryKey: ["minha-banca", user?.id],
     enabled: !!user,
     queryFn: async () => {
+      if (!user) throw new Error("Entre na sua conta.");
       const { data, error } = await supabase
         .from("sellers")
         .select("id, stall_name, producer_name, bio, city")
-        .eq("owner_id", user!.id)
+        .eq("owner_id", user.id)
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
@@ -61,10 +73,11 @@ function Painel() {
     queryKey: ["meus-produtos", banca?.id],
     enabled: !!banca?.id,
     queryFn: async () => {
+      if (!banca) return [];
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, price_cents, unit, category, image_url, is_available")
-        .eq("seller_id", banca!.id)
+        .select("id, name, price_cents, unit, category, image_url, is_available, stock_quantity, low_stock_threshold")
+        .eq("seller_id", banca.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -75,12 +88,13 @@ function Painel() {
     queryKey: ["pedidos-da-banca", banca?.id],
     enabled: !!banca?.id,
     queryFn: async () => {
+      if (!banca) return [];
       const { data, error } = await supabase
         .from("orders")
         .select(
           "id, total_cents, status, payment_method, created_at, order_items(product_name, quantity, unit)",
         )
-        .eq("seller_id", banca!.id)
+        .eq("seller_id", banca.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -89,17 +103,26 @@ function Painel() {
 
   return (
     <PageShell>
+      <AccountNav />
       <section className="mt-12 mb-10">
-        <h1 className="text-4xl font-extrabold">Minha banca</h1>
+        <h1 className="text-4xl font-extrabold">Painel do produtor</h1>
         <p className="mt-2 text-muted-foreground">
           Seus dados, sua chave PIX e os produtos que aparecem na feira.
         </p>
+        <div className="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Gerenciar minha banca">
+          {[
+            { id: "produtos", label: "Cadastrar produtos" },
+            { id: "pix", label: "Cadastrar chave PIX" },
+            { id: "estoque", label: "Gerenciar produtos e estoque" },
+            { id: "pedidos", label: "Pedidos recebidos" },
+          ].map((tab) => <Button key={tab.id} role="tab" aria-selected={secao === tab.id} variant={secao === tab.id ? "default" : "outline"} className="h-auto min-h-10 whitespace-normal" onClick={() => navigate({ search: { secao: tab.id } })}>{tab.label}</Button>)}
+        </div>
 
         {isLoading ? (
           <div className="glass-panel mt-6 h-64 animate-pulse rounded-3xl" />
         ) : (
-          <div className="mt-6 grid gap-6 lg:grid-cols-12">
-            <div className="lg:col-span-5">
+          <div className="mt-6">
+            <div className={secao === "pix" || !banca ? "max-w-xl" : "hidden"}>
               <FormBanca
                 banca={banca ?? null}
                 userId={user?.id ?? ""}
@@ -110,18 +133,18 @@ function Painel() {
               />
             </div>
 
-            <div className="space-y-6 lg:col-span-7">
+            <div className="space-y-6">
               {banca ? (
                 <>
-                  <FormProduto
+                  {secao === "produtos" && <FormProduto
                     sellerId={banca.id}
                     onSalvo={() => {
                       queryClient.invalidateQueries({ queryKey: ["meus-produtos"] });
                       queryClient.invalidateQueries({ queryKey: ["produtos-feira"] });
                     }}
-                  />
+                  />}
 
-                  <div className="glass-panel rounded-3xl p-6 shadow-glass">
+                  {secao === "estoque" && <div className="glass-panel rounded-3xl p-6 shadow-glass">
                     <h2 className="font-display text-lg font-bold">Meus produtos</h2>
                     <ul className="mt-4 space-y-3">
                       {produtos?.map((p) => (
@@ -166,6 +189,10 @@ function Painel() {
                           >
                             {p.is_available ? "Na feira" : "Escondido"}
                           </button>
+                          <StockEditor key={`${p.id}-${p.stock_quantity}-${p.low_stock_threshold}`} product={p} onSaved={() => {
+                            queryClient.invalidateQueries({ queryKey: ["meus-produtos"] });
+                            queryClient.invalidateQueries({ queryKey: ["produtos-feira"] });
+                          }} />
                           <button
                             onClick={async () => {
                               const { error } = await supabase
@@ -192,9 +219,9 @@ function Painel() {
                         </li>
                       )}
                     </ul>
-                  </div>
+                  </div>}
 
-                  <div className="glass-panel rounded-3xl p-6 shadow-glass">
+                  {secao === "pedidos" && <div className="glass-panel rounded-3xl p-6 shadow-glass">
                     <h2 className="font-display text-lg font-bold">Pedidos recebidos</h2>
                     <ul className="mt-4 space-y-3">
                       {pedidos?.map((o) => (
@@ -250,11 +277,11 @@ function Painel() {
                         </li>
                       )}
                     </ul>
-                  </div>
+                  </div>}
                 </>
               ) : (
                 <div className="glass-soft rounded-3xl p-6 text-sm text-muted-foreground">
-                  Preencha os dados da banca ao lado para começar a cadastrar produtos.
+                  Preencha os dados da banca para começar a cadastrar produtos.
                 </div>
               )}
             </div>
@@ -416,6 +443,8 @@ function FormProduto({ sellerId, onSalvo }: { sellerId: string; onSalvo: () => v
     category: "Hortifruti",
     image_url: "",
     description: "",
+    stock: "",
+    threshold: "3",
   });
   const [salvando, setSalvando] = useState(false);
 
@@ -429,6 +458,12 @@ function FormProduto({ sellerId, onSalvo }: { sellerId: string; onSalvo: () => v
       toast.error("Informe um preço válido, como 12,90");
       return;
     }
+    const stock = validStock(form.stock);
+    const threshold = validStock(form.threshold);
+    if (stock === null || threshold === null) {
+      toast.error("Informe um estoque válido, maior ou igual a zero.");
+      return;
+    }
     setSalvando(true);
     try {
       const { error } = await supabase.from("products").insert({
@@ -439,10 +474,12 @@ function FormProduto({ sellerId, onSalvo }: { sellerId: string; onSalvo: () => v
         unit: form.unit,
         category: form.category,
         image_url: form.image_url || null,
+        stock_quantity: stock,
+        low_stock_threshold: threshold,
       });
       if (error) throw error;
       toast.success("Produto publicado na feira");
-      setForm({ ...form, name: "", price: "", image_url: "", description: "" });
+      setForm({ ...form, name: "", price: "", image_url: "", description: "", stock: "" });
       onSalvo();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Não foi possível publicar");
@@ -513,6 +550,10 @@ function FormProduto({ sellerId, onSalvo }: { sellerId: string; onSalvo: () => v
           className={campo}
         />
       </label>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="block"><span className="text-xs font-medium text-muted-foreground">Estoque inicial ({form.unit})</span><input required type="number" min="0" step="any" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} className={campo} /></label>
+        <label className="block"><span className="text-xs font-medium text-muted-foreground">Alerta de estoque baixo</span><input required type="number" min="0" step="any" value={form.threshold} onChange={(e) => setForm({ ...form, threshold: e.target.value })} className={campo} /></label>
+      </div>
       <label className="block">
         <span className="text-xs font-medium text-muted-foreground">Descrição (opcional)</span>
         <input
