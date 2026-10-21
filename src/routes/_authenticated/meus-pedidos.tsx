@@ -6,6 +6,7 @@ import { PixBlock } from "@/components/PixBlock";
 import { PickupBlock } from "@/components/PickupBlock";
 import { formatBRL } from "@/lib/format";
 import { useSession } from "@/lib/useSession";
+import { AccountNav } from "@/components/AccountNav";
 
 export const Route = createFileRoute("/_authenticated/meus-pedidos")({
   head: () => ({
@@ -17,6 +18,8 @@ export const Route = createFileRoute("/_authenticated/meus-pedidos")({
       },
       { property: "og:title", content: "Meus pedidos — Colheita" },
       { property: "og:description", content: "Seus pedidos da feira e o pagamento por PIX." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MeusPedidos,
@@ -29,12 +32,13 @@ function MeusPedidos() {
     queryKey: ["meus-pedidos", user?.id],
     enabled: !!user,
     queryFn: async () => {
+      if (!user) throw new Error("Entre na sua conta.");
       const { data, error } = await supabase
         .from("orders")
         .select(
           "id, seller_id, total_cents, status, payment_method, created_at, sellers(stall_name), order_items(product_name, quantity, unit, unit_price_cents)",
         )
-        .eq("buyer_id", user!.id)
+        .eq("buyer_id", user.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
 
@@ -53,6 +57,7 @@ function MeusPedidos() {
 
   return (
     <PageShell>
+      <AccountNav />
       <section className="mt-12 mb-10">
         <h1 className="text-4xl font-extrabold">Meus pedidos</h1>
         <p className="mt-2 text-muted-foreground">

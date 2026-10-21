@@ -1,26 +1,21 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { ShoppingBasket } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { useSession } from "@/lib/useSession";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { to: "/", label: "Explorar" },
-  { to: "/painel", label: "Minha banca" },
+  { to: "/minha-conta", label: "Meu painel" },
   { to: "/meus-pedidos", label: "Meus pedidos" },
 ] as const;
 
 export function AppHeader() {
   const { count } = useCart();
   const { user } = useSession();
-  const navigate = useNavigate();
 
   const initials = (user?.email ?? "?").slice(0, 2).toUpperCase();
 
-  async function sair() {
-    await supabase.auth.signOut();
-    navigate({ to: "/", replace: true });
-  }
 
   return (
     <header className="flex items-center justify-between gap-4">
@@ -62,13 +57,12 @@ export function AppHeader() {
         </Link>
 
         {user ? (
-          <button
-            onClick={sair}
+          <Button asChild variant="ghost"
             className="grid size-10 place-items-center rounded-full bg-mint text-sm font-bold text-mint-foreground"
-            title="Sair da conta"
+            title="Abrir meu painel"
           >
-            {initials}
-          </button>
+            <Link to="/minha-conta" aria-label="Abrir meu painel">{initials}</Link>
+          </Button>
         ) : (
           <Link
             to="/auth"
