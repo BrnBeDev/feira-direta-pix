@@ -120,6 +120,44 @@ function AuthPage() {
               </div>
 
               <form onSubmit={enviar} className="space-y-3">
+                {modo === "criar" && (
+                  <>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(
+                        [
+                          { valor: "consumidor", titulo: "Sou consumidor", desc: "Quero comprar na feira" },
+                          { valor: "produtor", titulo: "Sou produtor", desc: "Quero vender na feira" },
+                        ] as const
+                      ).map((opcao) => (
+                        <button
+                          key={opcao.valor}
+                          type="button"
+                          onClick={() => setPapel(opcao.valor)}
+                          className={`rounded-2xl border px-3 py-3 text-left transition-colors ${
+                            papel === opcao.valor
+                              ? "border-primary bg-primary/10"
+                              : "border-input bg-card"
+                          }`}
+                        >
+                          <p className="text-sm font-bold">{opcao.titulo}</p>
+                          <p className="text-[11px] text-muted-foreground">{opcao.desc}</p>
+                        </button>
+                      ))}
+                    </div>
+                    <label className="block">
+                      <span className="text-xs font-medium text-muted-foreground">Seu nome</span>
+                      <input
+                        type="text"
+                        required
+                        maxLength={80}
+                        value={nome}
+                        onChange={(e) => setNome(e.target.value)}
+                        placeholder="Como você quer ser chamado"
+                        className="mt-1 w-full rounded-2xl border border-input bg-card px-4 py-3 text-base outline-none focus:border-primary"
+                      />
+                    </label>
+                  </>
+                )}
                 <label className="block">
                   <span className="text-xs font-medium text-muted-foreground">E-mail</span>
                   <input
