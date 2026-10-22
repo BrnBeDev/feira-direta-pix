@@ -84,6 +84,7 @@ function Index() {
             </a>
             <Link
               to="/painel"
+              search={{ secao: "produtos" }}
               className="glass-soft rounded-full px-6 py-3.5 text-sm font-semibold text-foreground"
             >
               Sou produtor

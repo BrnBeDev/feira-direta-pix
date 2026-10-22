@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_authenticated/painel")({
     ],
   }),
   validateSearch: (search: Record<string, unknown>): { secao: string } => ({
-    secao: ["produtos", "pix", "estoque", "pedidos"].includes(String(search.secao)) ? String(search.secao) : "produtos",
+    secao: ["produtos", "pix", "estoque", "pedidos"].includes(String(search["secao"])) ? String(search["secao"]) : "produtos",
   }),
   component: Painel,
 });
