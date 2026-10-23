@@ -3,16 +3,17 @@ import { ShoppingBasket } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useSession } from "@/lib/useSession";
 import { Button } from "@/components/ui/button";
+import { useAccount } from "@/lib/useAccount";
 
 const navItems = [
   { to: "/", label: "Explorar" },
   { to: "/minha-conta", label: "Meu painel" },
-  { to: "/meus-pedidos", label: "Meus pedidos" },
 ] as const;
 
 export function AppHeader() {
   const { count } = useCart();
   const { user } = useSession();
+  const { data: account, loading } = useAccount();
 
   const initials = (user?.email ?? "?").slice(0, 2).toUpperCase();
 
@@ -40,6 +41,7 @@ export function AppHeader() {
             {item.label}
           </Link>
         ))}
+        {user && !loading && <Button asChild variant="ghost">{account?.producer ? <Link to="/painel" search={{ secao: "pedidos" }}>Pedidos recebidos</Link> : <Link to="/meus-pedidos">Meus pedidos</Link>}</Button>}
       </nav>
 
       <div className="flex items-center gap-3">

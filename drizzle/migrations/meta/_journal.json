@@ -15,6 +15,13 @@
       "when": 1792761386084,
       "tag": "0001_private_order_chat_and_account_preferences",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792761454507,
+      "tag": "0002_allow_stock_decrement_inside_order_trigger",
+      "breakpoints": true
     }
   ]
 }
