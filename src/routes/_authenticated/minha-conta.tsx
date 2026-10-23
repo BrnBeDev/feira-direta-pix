@@ -33,10 +33,11 @@ function AccountPage() {
           { section: "produtos", label: "Cadastrar produtos", Icon: PackagePlus },
           { section: "pix", label: "Cadastrar chave PIX", Icon: KeyRound },
           { section: "estoque", label: "Gerenciar produtos e estoque", Icon: Boxes },
+          { section: "pedidos", label: "Pedidos recebidos", Icon: ShoppingBag },
         ].map(({ section, label, Icon }) => <Button key={section} asChild variant="outline" className="glass-panel h-auto min-h-32 justify-between whitespace-normal p-6 text-left">
           <Link to="/painel" search={{ secao: section }}><span className="flex flex-col gap-4"><Icon /><span className="font-display font-semibold">{label}</span></span><ArrowRight /></Link>
         </Button>)}
-        <Button asChild variant="outline" className="glass-panel h-28 justify-between p-6"><Link to="/meus-pedidos"><ShoppingBag />Meus pedidos<ArrowRight /></Link></Button>
+        {!producer && <Button asChild variant="outline" className="glass-panel h-28 justify-between p-6"><Link to="/meus-pedidos"><ShoppingBag />Meus pedidos<ArrowRight /></Link></Button>}
         <Button asChild variant="outline" className="glass-panel h-28 justify-between p-6"><Link to="/configuracoes"><Settings />Configurações<ArrowRight /></Link></Button>
         <Button variant="outline" className="glass-panel h-28 justify-start p-6" onClick={signOut} disabled={leaving}><LogOut />{leaving ? "Saindo…" : "Sair"}</Button>
       </div>}

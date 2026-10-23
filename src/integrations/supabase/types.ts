@@ -62,6 +62,44 @@ export type Database = {
           },
         ]
       }
+      order_messages: {
+        Row: {
+          attachment_name: string | null
+          attachment_path: string | null
+          body: string
+          created_at: string
+          id: string
+          order_id: string
+          sender_id: string
+        }
+        Insert: {
+          attachment_name?: string | null
+          attachment_path?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          order_id: string
+          sender_id: string
+        }
+        Update: {
+          attachment_name?: string | null
+          attachment_path?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          order_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_messages_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           buyer_id: string
@@ -252,6 +290,11 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      order_participant: { Args: { _order_id: string }; Returns: boolean }
+      set_account_preferences: {
+        Args: { _name: string; _role: Database["public"]["Enums"]["app_role"] }
+        Returns: undefined
       }
     }
     Enums: {

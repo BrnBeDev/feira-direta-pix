@@ -8,6 +8,7 @@ import { AccountNav } from "@/components/AccountNav";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "@/lib/useAccount";
 import { supabase } from "@/integrations/supabase/client";
+import { accountPreferencesSchema } from "@/lib/order-rules";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => ({ meta: [
@@ -25,14 +26,16 @@ function SettingsPage() {
   const { user, data, loading, error } = useAccount();
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
+  const [role, setRole] = useState<"produtor" | "consumidor">("consumidor");
   const [saving, setSaving] = useState(false);
-  useEffect(() => { if (data) setName(data.name); }, [data]);
+  useEffect(() => { if (data) { setName(data.name); setRole(data.producer ? "produtor" : "consumidor"); } }, [data]);
   async function save(event: React.FormEvent) {
     event.preventDefault();
-    if (!user || !name.trim()) return;
+    const parsed = accountPreferencesSchema.safeParse({ name, role });
+    if (!user || !parsed.success) return;
     setSaving(true);
     try {
-      const { error: saveError } = await supabase.from("profiles").upsert({ id: user.id, display_name: name.trim() });
+      const { error: saveError } = await supabase.rpc("set_account_preferences", { _name: parsed.data.name, _role: parsed.data.role });
       if (saveError) throw saveError;
       await queryClient.invalidateQueries({ queryKey: ["account", user.id] });
       toast.success("Configurações salvas");
@@ -45,7 +48,7 @@ function SettingsPage() {
     {loading ? <p className="mt-6">Carregando…</p> : error ? <p role="alert" className="mt-6 text-destructive">Não foi possível carregar seus dados.</p> : <form onSubmit={save} className="mt-8 space-y-5">
       <label className="block font-medium">Seu nome<input className={field} required maxLength={80} value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" /></label>
       <label className="block font-medium">E-mail<input className={field} readOnly value={user?.email ?? ""} type="email" /></label>
-      <p className="text-sm text-muted-foreground">Tipo de conta: {data?.producer ? "Produtor" : "Comprador"}</p>
+      <label className="block font-medium">Tipo de conta<select aria-label="Tipo de conta" className={field} value={role} onChange={(event) => setRole(event.target.value === "produtor" ? "produtor" : "consumidor")}><option value="consumidor">Consumidor / comprador</option><option value="produtor">Produtor / vendedor</option></select></label>
       <Button type="submit" disabled={saving || !name.trim()}><Save />{saving ? "Salvando…" : "Salvar configurações"}</Button>
     </form>}
   </section></PageShell>;

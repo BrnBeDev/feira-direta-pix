@@ -7,6 +7,9 @@ import { PickupBlock } from "@/components/PickupBlock";
 import { formatBRL } from "@/lib/format";
 import { useSession } from "@/lib/useSession";
 import { AccountNav } from "@/components/AccountNav";
+import { Button } from "@/components/ui/button";
+import { MessageCircle } from "lucide-react";
+import { orderStatusLabel } from "@/lib/order-rules";
 
 export const Route = createFileRoute("/_authenticated/meus-pedidos")({
   head: () => ({
@@ -84,11 +87,7 @@ function MeusPedidos() {
                     {o.sellers?.stall_name ?? "Banca da feira"}
                   </p>
                   <span className="rounded-full bg-mint/15 px-3 py-1 text-xs font-semibold text-mint">
-                    {o.status === "pago"
-                      ? "Pagamento confirmado"
-                      : o.payment_method === "na_retirada"
-                        ? "Você paga na retirada"
-                        : "Aguardando pagamento"}
+                    {orderStatusLabel(o.status)}
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -107,9 +106,10 @@ function MeusPedidos() {
                     </li>
                   ))}
                 </ul>
+                <Button asChild variant="outline" className="mt-4"><Link to="/pedidos/$orderId/chat" params={{ orderId: o.id }}><MessageCircle />{o.payment_method === "pix" ? "Conversa e comprovante PIX" : "Conversa do pedido"}</Link></Button>
               </div>
               <div className="lg:col-span-5">
-                {o.payment_method === "na_retirada" ? (
+                {o.status === "pago" || o.status === "concluido" ? <p className="p-5 font-semibold">{orderStatusLabel(o.status)} · {formatBRL(o.total_cents)}</p> : o.payment_method === "na_retirada" ? (
                   <PickupBlock
                     stallName={o.sellers?.stall_name ?? "a banca"}
                     totalCents={o.total_cents}

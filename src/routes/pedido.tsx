@@ -9,6 +9,9 @@ import { PickupBlock } from "@/components/PickupBlock";
 import { useCart } from "@/lib/cart";
 import { useSession } from "@/lib/useSession";
 import { formatBRL } from "@/lib/format";
+import { StoredImage } from "@/components/StoredImage";
+import { Button } from "@/components/ui/button";
+import { MessageCircle } from "lucide-react";
 
 export const Route = createFileRoute("/pedido")({
   head: () => ({
@@ -20,6 +23,8 @@ export const Route = createFileRoute("/pedido")({
       },
       { property: "og:title", content: "Meu pedido — Colheita" },
       { property: "og:description", content: "Feche o pedido da feira e pague por PIX." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PedidoPage,
@@ -27,7 +32,7 @@ export const Route = createFileRoute("/pedido")({
 
 type Pagamento = "pix" | "na_retirada";
 
-type Confirmado = { sellerId: string; stallName: string; totalCents: number; pixKey: string | null };
+type Confirmado = { orderId: string; sellerId: string; stallName: string; totalCents: number; pixKey: string | null };
 
 function PedidoPage() {
   const { items, totalCents, setQuantity, remove, clear } = useCart();
@@ -103,6 +108,7 @@ function PedidoPage() {
         }
 
         criados.push({
+          orderId: pedido.id,
           sellerId: grupo.sellerId,
           stallName: grupo.stallName,
           totalCents: grupo.totalCents,
@@ -133,8 +139,8 @@ function PedidoPage() {
               : "Você paga direto ao feirante quando retirar os produtos na banca."}
           </p>
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            {confirmados.map((c) =>
-              pagamentoFeito === "pix" ? (
+            {confirmados.map((c) => <div key={c.orderId}>
+              {pagamentoFeito === "pix" ? (
                 <PixBlock
                   key={c.sellerId}
                   stallName={c.stallName}
@@ -143,8 +149,9 @@ function PedidoPage() {
                 />
               ) : (
                 <PickupBlock key={c.sellerId} stallName={c.stallName} totalCents={c.totalCents} />
-              ),
-            )}
+              )}
+              <Button asChild variant="outline" className="mt-3"><Link to="/pedidos/$orderId/chat" params={{ orderId: c.orderId }}><MessageCircle />{pagamentoFeito === "pix" ? "Enviar comprovante" : "Conversar com produtor"}</Link></Button>
+            </div>)}
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -202,7 +209,7 @@ function PedidoPage() {
                     {grupo.items.map((i) => (
                       <li key={i.productId} className="glass-soft flex items-center gap-3 rounded-2xl p-3">
                         {i.imageUrl ? (
-                          <img
+                          <StoredImage
                             src={i.imageUrl}
                             alt={i.name}
                             loading="lazy"

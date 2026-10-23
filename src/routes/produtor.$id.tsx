@@ -17,6 +17,8 @@ export const Route = createFileRoute("/produtor/$id")({
         property: "og:description",
         content: "Produtos frescos de uma banca da feira, com pagamento direto por PIX.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: BancaPage,
