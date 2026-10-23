@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
 import { formatBRL } from "@/lib/format";
+import { StoredImage } from "@/components/StoredImage";
 
 export type ProductCardData = {
   id: string;
@@ -19,7 +20,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   return (
     <div className="glass-panel flex flex-col rounded-3xl p-4 shadow-glass">
       {product.imageUrl ? (
-        <img
+        <StoredImage
           src={product.imageUrl}
           alt={product.name}
           loading="lazy"

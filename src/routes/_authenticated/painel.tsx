@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,10 @@ import { AccountNav } from "@/components/AccountNav";
 import { Button } from "@/components/ui/button";
 import { StockEditor } from "@/components/StockEditor";
 import { validStock } from "@/lib/account-rules";
+import { useAccount } from "@/lib/useAccount";
+import { StoredImage } from "@/components/StoredImage";
+import { nextOrderStatus, orderStatusLabel, validUpload, uploadExtension } from "@/lib/order-rules";
+import { MessageCircle, Check, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/painel")({
   head: () => ({
@@ -40,14 +44,14 @@ const categorias = ["Hortifruti", "Peixes", "Frios & queijos", "Doces", "Panific
 const tiposPix = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
 
 function Painel() {
-  const { user } = useSession();
+  const { user, data: account, loading: accountLoading } = useAccount();
   const queryClient = useQueryClient();
   const { secao } = Route.useSearch();
   const navigate = Route.useNavigate();
 
   const { data: banca, isLoading } = useQuery({
     queryKey: ["minha-banca", user?.id],
-    enabled: !!user,
+    enabled: !!user && !!account?.producer,
     queryFn: async () => {
       if (!user) throw new Error("Entre na sua conta.");
       const { data, error } = await supabase
@@ -71,7 +75,7 @@ function Painel() {
 
   const { data: produtos } = useQuery({
     queryKey: ["meus-produtos", banca?.id],
-    enabled: !!banca?.id,
+    enabled: !!banca?.id && !!account?.producer,
     queryFn: async () => {
       if (!banca) return [];
       const { data, error } = await supabase
@@ -86,7 +90,7 @@ function Painel() {
 
   const { data: pedidos } = useQuery({
     queryKey: ["pedidos-da-banca", banca?.id],
-    enabled: !!banca?.id,
+    enabled: !!banca?.id && !!account?.producer,
     queryFn: async () => {
       if (!banca) return [];
       const { data, error } = await supabase
@@ -100,6 +104,9 @@ function Painel() {
       return data;
     },
   });
+
+  if (accountLoading) return <PageShell><AccountNav /><p className="my-10">Carregando sua conta…</p></PageShell>;
+  if (!account?.producer) return <PageShell><AccountNav /><section className="my-10"><h1 className="font-display text-3xl font-bold">Conta de comprador</h1><Button asChild className="mt-6"><Link to="/configuracoes">Alterar para produtor nas configurações</Link></Button></section></PageShell>;
 
   return (
     <PageShell>
@@ -144,7 +151,7 @@ function Painel() {
                     }}
                   />}
 
-                  {secao === "estoque" && <div className="glass-panel rounded-3xl p-6 shadow-glass">
+                  {secao === "estoque" && <div className="p-0">
                     <h2 className="font-display text-lg font-bold">Meus produtos</h2>
                     <ul className="mt-4 space-y-3">
                       {produtos?.map((p) => (
@@ -153,7 +160,7 @@ function Painel() {
                           className="glass-soft flex flex-wrap items-center gap-3 rounded-2xl p-3"
                         >
                           {p.image_url ? (
-                            <img
+                            <StoredImage
                               src={p.image_url}
                               alt={p.name}
                               loading="lazy"
@@ -172,7 +179,7 @@ function Painel() {
                               {formatBRL(p.price_cents)} · {p.unit} · {p.category}
                             </p>
                           </div>
-                          <button
+                          <Button variant="outline" size="sm"
                             onClick={async () => {
                               const { error } = await supabase
                                 .from("products")
@@ -188,12 +195,12 @@ function Painel() {
                             className="glass-soft rounded-full px-3 py-1.5 text-xs font-semibold"
                           >
                             {p.is_available ? "Na feira" : "Escondido"}
-                          </button>
+                          </Button>
                           <StockEditor key={`${p.id}-${p.stock_quantity}-${p.low_stock_threshold}`} product={p} onSaved={() => {
                             queryClient.invalidateQueries({ queryKey: ["meus-produtos"] });
                             queryClient.invalidateQueries({ queryKey: ["produtos-feira"] });
                           }} />
-                          <button
+                          <Button variant="ghost" size="sm"
                             onClick={async () => {
                               const { error } = await supabase
                                 .from("products")
@@ -210,7 +217,7 @@ function Painel() {
                             className="text-xs font-medium text-muted-foreground"
                           >
                             apagar
-                          </button>
+                          </Button>
                         </li>
                       ))}
                       {produtos && produtos.length === 0 && (
@@ -221,7 +228,7 @@ function Painel() {
                     </ul>
                   </div>}
 
-                  {secao === "pedidos" && <div className="glass-panel rounded-3xl p-6 shadow-glass">
+                  {secao === "pedidos" && <div>
                     <h2 className="font-display text-lg font-bold">Pedidos recebidos</h2>
                     <ul className="mt-4 space-y-3">
                       {pedidos?.map((o) => (
@@ -241,33 +248,30 @@ function Painel() {
                           </p>
                           <div className="mt-3 flex flex-wrap items-center gap-2">
                             <span className="rounded-full bg-mint/15 px-3 py-1 text-xs font-semibold text-mint">
-                              {o.status === "pago"
-                                ? "Pagamento confirmado"
-                                : o.payment_method === "na_retirada"
-                                  ? "Paga na retirada"
-                                  : "Aguardando PIX"}
+                              {orderStatusLabel(o.status)}
                             </span>
-                            {o.status !== "pago" && (
-                              <button
+                            {nextOrderStatus(o.status) && (
+                              <Button size="sm"
                                 onClick={async () => {
                                   const { error } = await supabase
                                     .from("orders")
-                                    .update({ status: "pago" })
-                                    .eq("id", o.id);
+                                    .update({ status: nextOrderStatus(o.status) ?? o.status })
+                                    .eq("id", o.id).select("id").single();
                                   if (error) {
                                     toast.error("Não foi possível atualizar");
                                     return;
                                   }
-                                  toast.success("Pedido marcado como pago");
+                                  toast.success(o.status === "pago" ? "Pedido concluído" : "Pedido marcado como pago");
                                   queryClient.invalidateQueries({ queryKey: ["pedidos-da-banca"] });
                                 }}
                                 className="rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground"
                               >
-                                {o.payment_method === "na_retirada"
+                                <Check />{o.status === "pago" ? "Concluir pedido" : o.payment_method === "na_retirada"
                                   ? "Recebi na retirada"
                                   : "Recebi o PIX"}
-                              </button>
+                              </Button>
                             )}
+                            <Button asChild variant="outline" size="sm"><Link to="/pedidos/$orderId/chat" params={{ orderId: o.id }}><MessageCircle />Conversa do pedido</Link></Button>
                           </div>
                         </li>
                       ))}
@@ -424,18 +428,20 @@ function FormBanca({
           </select>
         </label>
       </div>
-      <button
+      <Button
         type="submit"
         disabled={salvando}
         className="w-full rounded-2xl bg-primary px-4 py-4 text-base font-bold text-primary-foreground shadow-glass disabled:opacity-60"
       >
         {banca ? "Salvar alterações" : "Criar minha banca"}
-      </button>
+      </Button>
     </form>
   );
 }
 
 function FormProduto({ sellerId, onSalvo }: { sellerId: string; onSalvo: () => void }) {
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoInputKey, setPhotoInputKey] = useState(0);
   const [form, setForm] = useState({
     name: "",
     price: "",
@@ -466,6 +472,14 @@ function FormProduto({ sellerId, onSalvo }: { sellerId: string; onSalvo: () => v
     }
     setSalvando(true);
     try {
+      let imageUrl = form.image_url;
+      if (photo) {
+        if (!validUpload(photo)) throw new Error("Envie uma foto JPG, PNG ou WebP de até 5 MB.");
+        const path = `${sellerId}/${crypto.randomUUID()}.${uploadExtension(photo.type)}`;
+        const { error: uploadError } = await supabase.storage.from("product-photos").upload(path, photo, { contentType: photo.type });
+        if (uploadError) throw uploadError;
+        imageUrl = `storage:${path}`;
+      }
       const { error } = await supabase.from("products").insert({
         seller_id: sellerId,
         name: form.name,
@@ -473,13 +487,14 @@ function FormProduto({ sellerId, onSalvo }: { sellerId: string; onSalvo: () => v
         price_cents: cents,
         unit: form.unit,
         category: form.category,
-        image_url: form.image_url || null,
+        image_url: imageUrl || null,
         stock_quantity: stock,
         low_stock_threshold: threshold,
       });
       if (error) throw error;
       toast.success("Produto publicado na feira");
       setForm({ ...form, name: "", price: "", image_url: "", description: "", stock: "" });
+      setPhoto(null); setPhotoInputKey((key) => key + 1);
       onSalvo();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Não foi possível publicar");
@@ -542,13 +557,12 @@ function FormProduto({ sellerId, onSalvo }: { sellerId: string; onSalvo: () => v
         </label>
       </div>
       <label className="block">
-        <span className="text-xs font-medium text-muted-foreground">Link da foto (opcional)</span>
-        <input
-          value={form.image_url}
-          onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-          placeholder="https://..."
-          className={campo}
-        />
+        <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground"><Upload className="size-4" />Foto do produto (opcional)</span>
+        <input key={photoInputKey} type="file" aria-label="Foto do produto" accept="image/jpeg,image/png,image/webp" onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file && !validUpload(file)) { toast.error("Envie uma foto JPG, PNG ou WebP de até 5 MB."); event.target.value = ""; return; }
+          setPhoto(file ?? null);
+        }} className={campo} />
       </label>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block"><span className="text-xs font-medium text-muted-foreground">Estoque inicial ({form.unit})</span><input required type="number" min="0" step="any" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} className={campo} /></label>
@@ -563,13 +577,13 @@ function FormProduto({ sellerId, onSalvo }: { sellerId: string; onSalvo: () => v
           className={campo}
         />
       </label>
-      <button
+      <Button
         type="submit"
         disabled={salvando}
         className="w-full rounded-2xl bg-primary-deep px-4 py-4 text-base font-bold text-primary-foreground disabled:opacity-60"
       >
         Publicar na feira
-      </button>
+      </Button>
     </form>
   );
 }

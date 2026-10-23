@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { PageShell } from "@/components/PageShell";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -15,6 +16,8 @@ export const Route = createFileRoute("/auth")({
       },
       { property: "og:title", content: "Entrar na Colheita" },
       { property: "og:description", content: "Acesse sua conta da feira de produtores." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   validateSearch: (search: Record<string, unknown>): { next?: string | undefined } =>
@@ -26,7 +29,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const { next: destinoBruto } = Route.useSearch();
-  const next = destinoBruto ?? "/";
+  const next = destinoBruto ?? "/minha-conta";
   const navigate = useNavigate();
   const [modo, setModo] = useState<"entrar" | "criar">("entrar");
   const [email, setEmail] = useState("");
@@ -106,12 +109,12 @@ function AuthPage() {
             </div>
           ) : (
             <>
-              <button
+              <Button
                 onClick={entrarComGoogle}
                 className="glass-soft w-full rounded-2xl px-4 py-3.5 text-sm font-semibold text-foreground"
               >
                 Continuar com o Google
-              </button>
+              </Button>
 
               <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="h-px flex-1 bg-input" />
@@ -129,11 +132,11 @@ function AuthPage() {
                           { valor: "produtor", titulo: "Sou produtor", desc: "Quero vender na feira" },
                         ] as const
                       ).map((opcao) => (
-                        <button
+                        <Button variant="outline" aria-pressed={papel === opcao.valor}
                           key={opcao.valor}
                           type="button"
                           onClick={() => setPapel(opcao.valor)}
-                          className={`rounded-2xl border px-3 py-3 text-left transition-colors ${
+                          className={`h-auto flex-col items-start whitespace-normal rounded-2xl border px-3 py-3 text-left transition-colors ${
                             papel === opcao.valor
                               ? "border-primary bg-primary/10"
                               : "border-input bg-card"
@@ -141,7 +144,7 @@ function AuthPage() {
                         >
                           <p className="text-sm font-bold">{opcao.titulo}</p>
                           <p className="text-[11px] text-muted-foreground">{opcao.desc}</p>
-                        </button>
+                        </Button>
                       ))}
                     </div>
                     <label className="block">
@@ -181,23 +184,23 @@ function AuthPage() {
                     className="mt-1 w-full rounded-2xl border border-input bg-card px-4 py-3 text-base outline-none focus:border-primary"
                   />
                 </label>
-                <button
+                <Button
                   type="submit"
                   disabled={enviando}
                   className="w-full rounded-2xl bg-primary px-4 py-4 text-sm font-bold text-primary-foreground shadow-glass disabled:opacity-60"
                 >
                   {modo === "entrar" ? "Entrar" : "Criar conta"}
-                </button>
+                </Button>
               </form>
 
-              <button
+              <Button variant="ghost"
                 onClick={() => setModo(modo === "entrar" ? "criar" : "entrar")}
                 className="mt-4 w-full text-center text-sm font-medium text-primary"
               >
                 {modo === "entrar"
                   ? "Ainda não tenho conta — quero criar"
                   : "Já tenho conta — quero entrar"}
-              </button>
+              </Button>
             </>
           )}
         </div>
