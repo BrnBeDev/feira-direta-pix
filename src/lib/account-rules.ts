@@ -1,5 +1,5 @@
 export function isProducerAccount(roles: readonly string[], ownsStall: boolean) {
-  return roles.includes("produtor") || ownsStall;
+  return roles.length > 0 ? roles.includes("produtor") : ownsStall;
 }
 
 export function validStock(value: string): number | null {

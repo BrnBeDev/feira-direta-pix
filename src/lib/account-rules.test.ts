@@ -12,6 +12,9 @@ describe("painéis da conta", () => {
   test("produtor antigo com banca mantém seu painel", () => {
     strictEqual(isProducerAccount([], true), true);
   });
+  test("consumidor com banca antiga usa painel de comprador após trocar o tipo", () => {
+    strictEqual(isProducerAccount(["consumidor"], true), false);
+  });
   test("estoque admite peso fracionado e zero, mas não valores negativos", () => {
     strictEqual(validStock("2,5"), 2.5);
     strictEqual(validStock("0"), 0);
