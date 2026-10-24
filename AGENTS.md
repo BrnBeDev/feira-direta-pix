@@ -15,3 +15,4 @@
 - Order messages and receipt storage are participant-scoped by order; uploaded product images use private storage and signed URLs with catalog/owner read policies because public buckets are blocked.
 - Keep chat as an authenticated order-specific page with query invalidation and a cleaned-up realtime subscription so attachments and messages remain isolated between orders.
 - Use the shared account navigation and sign-out hook across account pages so sign-out cancels queries and clears private cached data before leaving.
+- Download public dependencies from the npm registry with limited concurrency, preserving locked versions and integrity hashes; keep Lovable-only packages on their managed registry to avoid shared-cache rate limits.
