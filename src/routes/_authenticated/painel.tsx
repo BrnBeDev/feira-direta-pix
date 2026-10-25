@@ -56,7 +56,7 @@ function Painel() {
       if (!user) throw new Error("Entre na sua conta.");
       const { data, error } = await supabase
         .from("sellers")
-        .select("id, stall_name, producer_name, bio, city")
+        .select("id, stall_name, producer_name, product_type, bio, city")
         .eq("owner_id", user.id)
         .maybeSingle();
       if (error) throw error;
@@ -300,6 +300,7 @@ type Banca = {
   id: string;
   stall_name: string;
   producer_name: string;
+  product_type: string | null;
   bio: string | null;
   city: string | null;
   pix_key: string | null;
@@ -318,6 +319,7 @@ function FormBanca({
   const [form, setForm] = useState({
     stall_name: "",
     producer_name: "",
+    product_type: "Hortifruti",
     bio: "",
     city: "",
     pix_key: "",
@@ -330,6 +332,7 @@ function FormBanca({
       setForm({
         stall_name: banca.stall_name,
         producer_name: banca.producer_name,
+        product_type: banca.product_type ?? "Hortifruti",
         bio: banca.bio ?? "",
         city: banca.city ?? "",
         pix_key: banca.pix_key ?? "",
@@ -373,6 +376,18 @@ function FormBanca({
           placeholder="Ex.: Horta da Dona Marta"
           className={campo}
         />
+      </label>
+      <label className="block">
+        <span className="text-xs font-medium text-muted-foreground">Tipo de produto</span>
+        <select
+          value={form.product_type}
+          onChange={(e) => setForm({ ...form, product_type: e.target.value })}
+          className={campo}
+        >
+          {categorias.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
       </label>
       <label className="block">
         <span className="text-xs font-medium text-muted-foreground">Seu nome</span>
