@@ -29,6 +29,13 @@
       "when": 1792946655079,
       "tag": "0003_bind_product_photo_read_to_file",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792947095310,
+      "tag": "0004_fix_seller_product_policy_recursion",
+      "breakpoints": true
     }
   ]
 }

@@ -225,6 +225,7 @@ export type Database = {
           pix_key: string | null
           pix_key_type: string | null
           producer_name: string
+          product_type: string | null
           stall_name: string
           updated_at: string
         }
@@ -237,6 +238,7 @@ export type Database = {
           pix_key?: string | null
           pix_key_type?: string | null
           producer_name: string
+          product_type?: string | null
           stall_name: string
           updated_at?: string
         }
@@ -249,6 +251,7 @@ export type Database = {
           pix_key?: string | null
           pix_key_type?: string | null
           producer_name?: string
+          product_type?: string | null
           stall_name?: string
           updated_at?: string
         }
@@ -292,6 +295,8 @@ export type Database = {
         Returns: boolean
       }
       order_participant: { Args: { _order_id: string }; Returns: boolean }
+      owns_seller: { Args: { _seller_id: string }; Returns: boolean }
+      seller_is_listed: { Args: { _seller_id: string }; Returns: boolean }
       set_account_preferences: {
         Args: { _name: string; _role: Database["public"]["Enums"]["app_role"] }
         Returns: undefined
