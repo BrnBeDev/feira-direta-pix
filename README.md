@@ -2,7 +2,6 @@
 
 Preciso de um aplicativo para uma feira de produtores que permita o cadastro de produtos e a compra direta pelo próprio aplicativo. O aplicativo deve permitir a individualização do vendedor e de seus produtos, bem como disponibilizar o cadastro de chave PIX para pagamento direto. Ele deve ter uma interface intuitiva e amigável para abranger um público amplo.
 
-This project was built with [Lovable](https://lovable.dev).
 
 **Live app**: https://feira-direta-pix.lovable.app
 
